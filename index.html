@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <title>Min sida</title>
+  
+  <!-- ================================================================
+   🚨🚨🚨 VARNING! VARNING! VARNING! 🚨🚨🚨
+   
+   ALL KOD I DEN HÄR FILEN ÄGS AV KLOZZ HOLDING AB.
+   ALLA RÄTTIGHETER FÖRBEHÅLLES.
+
+   FÖRBJUDET ATT KOPIERA, DELA, ÄNDRA ELLER ANVÄNDA UTAN
+   SKRIFTLIGT TILLSTÅND FRÅN KLOZZ HOLDING AB.
+
+   ALL OTILLÅTEN ANVÄNDNING KOMMER ATT FÖLJA RÄTTSLIGA ÅTGÄRDER.
+
+   COPYRIGHT © 2025 KLOZZ HOLDING AB. ALL RIGHTS RESERVED.
+  ================================================================= -->
+  
+   
+</head>
+<body>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Monterkonfigurator</title>
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
+<style>
+:root {
+--primary: #444;
+--accent: #888;
+--bg: #f5f5f5;
+--border: #ccc;
+--highlight: #333;
+--green: #4caf50;
+}
+body {
+margin: 0;
+background: var(--bg);
+font-family: "Segoe UI", sans-serif;
+color: var(--primary);
+}
+#configurator {
+max-width: 700px;
+margin: 40px auto;
+background: white;
+border: 1px solid var(--border);
+border-radius: 12px;
+box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+padding: 30px;
+}
+h2 {
+font-size: 1.4em;
+margin-bottom: 10px;
+border-bottom: 1px solid var(--border);
+padding-bottom: 5px;
+}
+select,
+input,
+textarea {
+width: 100%;
+padding: 10px;
+font-size: 16px;
+border: 1px solid var(--border);
+border-radius: 6px;
+background-color: #fafafa;
+margin-top: 6px;
+margin-bottom: 16px;
+box-sizing: border-box;
+}
+button {
+background: var(--primary);
+color: white;
+padding: 12px 24px;
+border: none;
+border-radius: 8px;
+font-size: 16px;
+cursor: pointer;
+transition: background 0.3s;
+}
+button:hover {
+background: var(--highlight);
+}
+#orderButton {
+margin: 20px auto 0 auto;
+display: none;
+border: 2px solid var(--green);
+}
+#stepIndicator {
+font-size: 1.1em;
+color: var(--accent);
+margin-bottom: 20px;
+text-align: center;
+}
+.step {
+display: none;
+animation: fadeSlide 0.4s ease-in-out;
+}
+.step.active {
+display: block;
+}
+@keyframes fadeSlide {
+from {
+opacity: 0;
+transform: translateY(15px);
+}
+to {
+opacity: 1;
+transform: translateY(0);
+}
+}
+.navigation {
+text-align: center;
+margin-top: 20px;
+}
+.navigation button {
+margin: 0 10px;
+}
+#monterbild-wrapper {
+position: relative;
+margin-top: 30px;
+border: 1px solid var(--border);
+border-radius: 8px;
+overflow: hidden;
+}
+#monterbild {
+width: 100%;
+display: block;
+}
+.overlay {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+display: none;
+pointer-events: none;
+}
+/* Färgval som klickbara rutor */
+.color-options {
+display: flex;
+gap: 12px;
+margin-top: 10px;
+margin-bottom: 16px;
+justify-content: flex-start;
+}
+.color-swatch {
+width: 50px;
+height: 50px;
+border: 2px solid transparent;
+border-radius: 6px;
+cursor: pointer;
+transition: border-color 0.3s;
+}
+.color-swatch.selected {
+border-color: black;
+}
+/* Inredningsval som bilder i grid */
+.inredning-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+gap: 12px;
+margin-bottom: 16px;
+justify-items: center;
+}
+.inredning-option {
+border: 2px solid transparent;
+border-radius: 8px;
+padding: 4px;
+cursor: pointer;
+transition: border-color 0.3s;
+}
+.inredning-option.selected {
+border-color: var(--green);
+}
+.inredning-option img {
+width: 100%;
+max-width: 80px;
+height: auto;
+display: block;
+}
+/* Steg 1 med boxar */
+.size-options {
+display: flex;
+gap: 15px;
+margin-bottom: 16px;
+justify-content: flex-start;
+}
+.size-box {
+border: 2px solid var(--border);
+padding: 15px 20px;
+border-radius: 10px;
+cursor: pointer;
+user-select: none;
+font-weight: 600;
+color: var(--primary);
+transition: border-color 0.3s, box-shadow 0.3s;
+}
+.size-box.selected {
+border-color: var(--green);
+box-shadow: 0 0 8px var(--green);
+color: var(--green);
+}
+/* Steg 3 nya boxar (väggval) */
+.wall-options {
+display: flex;
+gap: 15px;
+margin-bottom: 16px;
+justify-content: flex-start;
+}
+.wall-box {
+border: 2px solid var(--border);
+padding: 15px 20px;
+border-radius: 10px;
+cursor: pointer;
+user-select: none;
+font-weight: 600;
+color: var(--primary);
+transition: border-color 0.3s, box-shadow 0.3s;
+}
+.wall-box.selected {
+border-color: var(--green);
+box-shadow: 0 0 8px var(--green);
+color: var(--green);
+}
+/* Prisvisning sista steget */
+#priceSummary {
+background: #e8f5e9;
+border: 2px solid var(--green);
+padding: 20px;
+border-radius: 10px;
+font-size: 1.2em;
+margin-bottom: 15px;
+text-align: center;
+color: var(--green);
+}
+#priceSummary small {
+display: block;
+font-size: 0.8em;
+color: var(--accent);
+margin-top: 6px;
+}
+#formConfig > .step:nth-of-type(3) {
+position: relative;
+z-index: 0; /* Steg 3 längst bak */
+}
+#formConfig > .step:nth-of-type(4) {
+position: relative;
+z-index: 10; /* Steg 4 ovanpå steg 3 */
+}
+/* ...alla andra css-regler här... */
+#monterbild-wrapper {
+position: relative;
+margin-top: 30px;
+border: 1px solid var(--border);
+border-radius: 8px;
+overflow: hidden;
+}
+/* Steg 3 overlay */
+#overlay-trycktvagg {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+z-index: 1; /* Lägre */
+display: none; /* Styrs via JS */
+}
+#Stordisk {
+  position: absolute; /* viktigt för z-index ska funka */
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 9999; /* högst så den hamnar överst */
+  display: none; /* styrs via JS */
+}
+/* Steg 4 overlays */
+#overlay-stabord,
+#overlay-disk,
+#overlay-tv43,
+#overlay-tv50,
+#overlay-litenhylla,
+#overlay-storhylla {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+z-index: 10; /* Högre */
+display: none; /* Styrs via JS */
+}
+</style>
+</head>
+<body>
+<div id="configurator">
+<div><span id="stepIndicator">Steg 1 av 5</span></div>
+<form id="formConfig">
+<!-- Steg 1 -->
+<div class="step active">
+<h2>Steg 1: Välj monterstorlek</h2>
+<div class="size-options" id="sizeOptionsRectangular">
+<div class="size-box" data-value="3m">3 meter</div>
+<div class="size-box" data-value="4m">4 meter</div>
+<div class="size-box" data-value="5m">5 meter</div>
+</div>
+
+<div class="size-options" id="sizeOptionsSquare">
+<div class="size-box" data-value="3x3">3x3 meter</div>
+<div class="size-box" data-value="4x4">4x4 metter</div>
+<div class="size-box" data-value="5x5">5x5 meter</div>
+</div>
+
+<input type="hidden" id="size" name="size" required />
+</div>
+<!-- Steg 2 -->
+<div class="step">
+<h2>Steg 2: Välj matta</h2>
+<div class="color-options" id="colorOptions">
+<div
+class="color-swatch"
+data-value="rod"
+style="background: red"
+title="Röd"
+></div>
+<div
+class="color-swatch"
+data-value="bla"
+style="background: blue"
+title="Blå"
+></div>
+<div
+class="color-swatch"
+data-value="gra"
+style="background: gray"
+title="Grå"
+></div>
+<div
+class="color-swatch"
+data-value="svart"
+style="background: black"
+title="Svart"
+></div>
+</div>
+<input type="hidden" id="carpet" name="carpet" required />
+</div>
+<!-- Steg 3 -->
+<div class="step">
+<h2>Steg 3: Välj vägg</h2>
+<div class="wall-options" id="wallOptions">
+<div class="wall-box" data-value="vitvagg">Vit vägg</div>
+<div class="wall-box" data-value="trycktvagg">
+Eget tryck (Kräver tryckfärdig PDF)
+</div>
+</div>
+<input type="hidden" id="wall" name="wall" required />
+</div>
+<!-- Steg 4 -->
+<div class="step">
+<h2>Steg 4: Välj tillval</h2>
+<div class="inredning-grid" id="inredningGrid">
+<div class="inredning-option" data-value="stabord">
+<img
+src="https://monterhyra.wordpress.com/wp-content/uploads/2025/05/skarmavbild-2025-05-28-kl.-20.34.17.png"
+alt="Ståbord"
+/>
+</div>
+<div class="inredning-option" data-value="disk">
+<img
+src="https://monterhyra.wordpress.com/wp-content/uploads/2025/05/skarmavbild-2025-05-28-kl.-20.34.08.png"
+alt="Disk"
+/>
+</div>
+<div class="inredning-option" data-value="Stordisk">
+<img
+src="https://monterhyra.wordpress.com/wp-content/uploads/2025/06/image-removebg-preview.png"
+alt="Stordisk"
+/>
+</div>
+<div class="inredning-option" data-value="Blomma">
+<img
+src="https://monterhyra.wordpress.com/wp-content/uploads/2025/06/skarmavbild_2025-06-03_kl._10.34.03-removebg-preview.png"
+alt="Blomma"
+/>
+</div>
+<div class="inredning-option" data-value="storhylla">
+<img
+src="https://monterhyra.wordpress.com/wp-content/uploads/2025/05/vagghylla.png"
+alt="Stor hylla"
+/>
+</div>
+<div class="inredning-option" data-value="tv50">
+<img
+src="https://monterhyra.wordpress.com/wp-content/uploads/2025/05/skarmavbild-2025-05-28-kl.-20.34.34.png"
+alt="TV 50"
+/>
+</div>
+<div class="inredning-option" data-value="tv43">
+<img
+src="https://monterhyra.wordpress.com/wp-content/uploads/2025/05/skarmavbild-2025-05-28-kl.-20.35.08.png"
+alt="TV 43"
+/>
+</div>
+</div>
+</div>
+<!-- Steg 5 -->
+<div class="step">
+<h2>Steg 5: Information & Beställ</h2>
+<div id="priceSummary" aria-live="polite" aria-atomic="true">
+Totalpris: 0 kr
+<small>Frakt tillkommer</small>
+</div>
+<label for="name">Namn:</label>
+<input type="text" id="name" name="name" required />
+<label for="company">Företagsnamn:</label>
+<input type="text" id="company" name="company" required />
+<label for="email">E-post:</label>
+<input type="email" id="email" name="email" required />
+<label for="comments">Kommentarer:</label>
+<textarea id="comments" name="comments" rows="4"></textarea>
+</div>
+<div class="navigation">
+<button type="button" id="prevBtn" style="display: none">
+Föregående
+</button>
+<button type="button" id="nextBtn">Nästa</button>
+</div>
+</form>
+<button id="orderButton">Låt oss skapa din monter!</button>
+
+<div id="monterbild-wrapper">
+<img
+id="monterbild"
+src="https://monterhyra.wordpress.com/wp-content/uploads/2025/05/skarmavbild-2025-05-28-kl.-14.54.23.png"
+alt="Monter"
+/>
+<img
+id="overlay-stabord"
+class="overlay"
+src="https://monterhyra.wordpress.com/wp-content/uploads/2025/05/stabord.png"
+/>
+<img
+id="overlay-disk"
+class="overlay"
+src="https://monterhyra.wordpress.com/wp-content/uploads/2025/05/disk-removebg-preview-2.png"
+/>
+<img
+id="overlay-tv43"
+class="overlay"
+src="https://monterhyra.wordpress.com/wp-content/uploads/2025/05/tv43.png"
+/>
+<img
+id="overlay-tv50"
+class="overlay"
+src="https://monterhyra.wordpress.com/wp-content/uploads/2025/05/tv50.png"
+/>
+<img
+id="overlay-litenhylla"
+class="overlay"
+src="https://monterhyra.wordpress.com/wp-content/uploads/2025/05/litenhylla.png"
+/>
+<img
+id="overlay-storhylla"
+class="overlay"
+src="https://monterhyra.wordpress.com/wp-content/uploads/2025/05/skarmavbild_2025-05-30_kl._15.58.01-removebg-preview.png"
+/>
+<img
+id="overlay-trycktvagg"
+class="overlay"
+src="https://monterhyra.wordpress.com/wp-content/uploads/2025/05/skarmavbild_2025-05-30_kl._16.05.38-removebg-preview.png"
+alt="Eget tryck"
+/>
+<img
+id="Blomma"
+class="overlay"
+src="https://monterhyra.wordpress.com/wp-content/uploads/2025/06/skarmavbild_2025-06-03_kl._09.47.38-removebg-preview.png"
+alt="Blomma"
+/>
+<img
+id="Stordisk"
+class="overlay"
+src="https://monterhyra.wordpress.com/wp-content/uploads/2025/06/skarmavbild_2025-06-03_kl._10.30.17-removebg-preview.png"
+alt="Stordisk"
+/>
+<img
+id="3x3"
+class="overlay"
+src="https://monterhyra.wordpress.com/wp-content/uploads/2025/06/skarmavbild_2025-06-03_kl._09.37.18-removebg-preview.png"
+alt="3x3"
+/>
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("formConfig");
+    const steps = document.querySelectorAll(".step");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const orderButton = document.getElementById("orderButton");
+    const stepIndicator = document.getElementById("stepIndicator");
+    const carpetInput = document.getElementById("carpet");
+    const sizeInput = document.getElementById("size");
+    const wallInput = document.getElementById("wall");
+    const monterbild = document.getElementById("monterbild");
+    const selectedInredning = new Set();
+  
+    const carpetToImage = {
+      bla: "https://monterhyra.wordpress.com/wp-content/uploads/2025/05/monter_bla.png",
+      svart: "https://monterhyra.wordpress.com/wp-content/uploads/2025/05/monter_svart.png",
+      rod: "https://monterhyra.wordpress.com/wp-content/uploads/2025/05/monter_rod.png",
+      gra: "https://monterhyra.wordpress.com/wp-content/uploads/2025/05/monter_gra.png",
+    };
+  
+    const overlayImages = {
+      stabord: document.getElementById("overlay-stabord"),
+      disk: document.getElementById("overlay-disk"),
+      tv43: document.getElementById("overlay-tv43"),
+      tv50: document.getElementById("overlay-tv50"),
+      litenhylla: document.getElementById("overlay-litenhylla"),
+      storhylla: document.getElementById("overlay-storhylla"),
+      trycktvagg: document.getElementById("overlay-trycktvagg"),
+      Blomma: document.getElementById("Blomma"),
+      Stordisk: document.getElementById("Stordisk"),
+      "3x3": document.getElementById("3x3")
+    };
+  
+    const priser = {
+      monterbord_stolar: 1500,
+      disk: 3000,
+      tryckt_vagg_start: 1000,
+      tryckt_vagg_kvm: 700,
+      matta_kvm: 190,
+      produktionsledning: 5000,
+      monterstorlek: {
+        "3m": 10000,
+        "4m": 12500,
+        "5m": 16000,
+        "3x3": 18500,
+        "4x4": 21500,
+        "5x5": 25000,
+      },
+      blomma: 950,
+      stordisk: 5500,
+      litenhylla: 850,
+      storhylla: 1200,
+      tv43: 3000,
+      tv50: 4500,
+    };
+  
+    let currentStep = 0;
+  
+    function showStep(n) {
+      steps.forEach((step, i) => {
+        step.classList.toggle("active", i === n);
+      });
+      stepIndicator.textContent = `Steg ${n + 1} av ${steps.length}`;
+      prevBtn.style.display = n === 0 ? "none" : "inline-block";
+      nextBtn.style.display = n === steps.length - 1 ? "none" : "inline-block";
+      orderButton.style.display = n === steps.length - 1 ? "inline-block" : "none";
+      if (n === steps.length - 1) {
+        updatePriceSummary();
+      }
+    }
+  
+    // Steg 1: Monterstorlek väljare boxar
+    const sizeBoxes = document.querySelectorAll(".size-box");
+    sizeBoxes.forEach((box) => {
+      box.addEventListener("click", () => {
+        sizeBoxes.forEach((b) => b.classList.remove("selected"));
+        box.classList.add("selected");
+  
+        sizeInput.value = box.dataset.value;
+  
+        // Dölj overlay-bilden för 3x3 först
+        overlayImages["3x3"].style.display = "none";
+  
+        // Om 3x3, 4x4 eller 5x5 är valt, visa overlay-bilden
+        if (["3x3", "4x4", "5x5"].includes(box.dataset.value)) {
+          overlayImages["3x3"].style.display = "block";
+        } else {
+          overlayImages["3x3"].style.display = "none";
+        }
+      });
+    });
+  
+    // Steg 2: Matta väljare boxar
+    const carpetBoxes = document.querySelectorAll(".color-swatch");
+    carpetBoxes.forEach((box) => {
+      box.addEventListener("click", () => {
+        carpetBoxes.forEach((b) => b.classList.remove("selected"));
+        box.classList.add("selected");
+        carpetInput.value = box.dataset.value;
+        monterbild.src = carpetToImage[box.dataset.value];
+      });
+    });
+  
+    // Steg 3: Väggval boxar
+    const wallBoxes = document.querySelectorAll(".wall-box");
+    wallBoxes.forEach((box) => {
+      box.addEventListener("click", () => {
+        wallBoxes.forEach((b) => b.classList.remove("selected"));
+        box.classList.add("selected");
+        wallInput.value = box.dataset.value;
+  
+        // Dölj overlaybilder för trycktvagg och vitvagg först
+        Object.entries(overlayImages).forEach(([key, img]) => {
+          if (["trycktvagg", "vitvagg"].includes(key)) {
+            img.style.display = "none";
+          }
+        });
+  
+        // Visa overlaybild för vald vägg
+        if (overlayImages[box.dataset.value]) {
+          overlayImages[box.dataset.value].style.display = "block";
+        }
+      });
+    });
+  
+    // Steg 4: Inredning (flera val möjliga)
+    const inredningGrid = document.getElementById("inredningGrid");
+    inredningGrid.addEventListener("click", (e) => {
+      const option = e.target.closest(".inredning-option");
+      if (!option) return;
+      const val = option.dataset.value;
+      if (selectedInredning.has(val)) {
+        selectedInredning.delete(val);
+        option.classList.remove("selected");
+        if (overlayImages[val]) overlayImages[val].style.display = "none";
+      } else {
+        selectedInredning.add(val);
+        option.classList.add("selected");
+        if (overlayImages[val]) overlayImages[val].style.display = "block";
+      }
+    });
+  
+    function calculateArea() {
+      let bredd = 0;
+      if (sizeInput.value === "3m") bredd = 3;
+      else if (sizeInput.value === "4m") bredd = 4;
+      else if (sizeInput.value === "5m") bredd = 5;
+      else if (sizeInput.value === "3x3") bredd = 6;
+      else if (sizeInput.value === "4x4") bredd = 8;
+      else if (sizeInput.value === "5x5") bredd = 10;
+      return bredd * 2.5;
+    }
+  
+    function updatePriceSummary() {
+      if (!sizeInput.value || !carpetInput.value || !wallInput.value) {
+        document.getElementById("priceSummary").textContent =
+          "Vänligen gör alla val.";
+        return;
+      }
+  
+      let total = 0;
+      total += priser.monterstorlek[sizeInput.value] || 0;
+      total += priser.produktionsledning;
+  
+      const area = calculateArea();
+      total += priser.matta_kvm * area;
+  
+      if (wallInput.value === "trycktvagg") {
+        total += priser.tryckt_vagg_start + priser.tryckt_vagg_kvm * area;
+      }
+  
+      if (selectedInredning.has("stabord"))
+        total += priser.monterbord_stolar;
+      if (selectedInredning.has("disk")) total += priser.disk;
+      // TV 43 och 50 påverkar bara bild, inget pris
+  
+      const priceEl = document.getElementById("priceSummary");
+      priceEl.innerHTML = `Totalpris: <strong>${total.toLocaleString()} kr</strong><br><small>Frakt tillkommer</small>`;
+    }
+  
+    // Navigationsknappar
+    nextBtn.addEventListener("click", () => {
+      const currentInputs = steps[currentStep].querySelectorAll(
+        "input[required], select[required]"
+      );
+      for (const input of currentInputs) {
+        if (!input.value) {
+          alert("Vänligen gör alla val innan du går vidare.");
+          return;
+        }
+      }
+      if (currentStep < steps.length - 1) {
+        currentStep++;
+        showStep(currentStep);
+      }
+    });
+  
+    prevBtn.addEventListener("click", () => {
+      if (currentStep > 0) {
+        currentStep--;
+        showStep(currentStep);
+      }
+    });
+  
+    // Visa första steget initialt
+    showStep(currentStep);
+  
+    // Beställknapp - skicka via mailto:
+    orderButton.addEventListener("click", () => {
+  if (!form.checkValidity()) {
+    alert("Vänligen fyll i alla obligatoriska fält.");
+    return;
+  }
+
+  const name = document.getElementById("name").value;
+  const company = document.getElementById("company").value;
+  const email = document.getElementById("email").value;
+  const comments = document.getElementById("comments").value;
+
+  const size = sizeInput.value;
+  const carpet = carpetInput.value;
+  const wall = wallInput.value;
+
+  const inredningArray = Array.from(selectedInredning).join(", ");
+  const totalpris = document.getElementById("priceSummary").innerText;
+
+  const subject = `Beställning av monter – ${company}`;
+  const body = `
+Namn: ${name}
+Företag: ${company}
+E-post: ${email}
+
+Monterstorlek: ${size}
+Matta: ${carpet}
+Väggtyp: ${wall}
+Tillval: ${inredningArray}
+
+Kommentarer:
+${comments}
+
+Totalt pris: ${totalpris}
+
+Viktig information:
+- Frakt tillkommer.
+- Betalningsvillkor: 30 dagar netto.
+- Leveranstid: 1-2 veckor efter godkänd order.
+- Vid avbokning debiteras 30% av ordervärde.
+  `;
+
+  const mailtoLink = `mailto:monterhyra@gmail.com?bcc=exempel@exempel.se&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = mailtoLink;
+
+  alert("Tack för din beställning! Vi kontaktar dig snart.");
+});
+
+  });
+  </script>
+  
+</body>
+</html>
