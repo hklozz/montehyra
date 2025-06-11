@@ -2,11 +2,8 @@ const CACHE_NAME = "monter-cache-v1";
 const urlsToCache = [
   "/",
   "/index.html",
-  "/style.css",    // byt namn om du har annat css-filnamn
-  "/script.js",    // byt namn om du har annat js-filnamn
-  "/manifest.json",
-  "/icon-192.png", // om du har en ikon med det namnet
-  "/icon-512.png"  // om du har en ikon med det namnet
+  "/style.css",
+  "/script.js"
 ];
 
 self.addEventListener("install", event => {
